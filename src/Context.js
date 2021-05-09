@@ -7,6 +7,22 @@ const SocketContext = createContext();
 const config = {
   iceServers: [
     { url: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+    {
+      url: 'turn:numb.viagenie.ca',
+      credential: 'muazkh',
+      username: 'webrtc@live.com',
+    },
+    {
+      url: 'turn:192.158.29.39:3478?transport=udp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808',
+    },
+    {
+      url: 'turn:192.158.29.39:3478?transport=tcp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808',
+    },
   ],
 };
 
@@ -51,6 +67,10 @@ const ContextProvider = ({ children }) => {
 
     const peer = new Peer({ initiator: false, trickle: false, config, stream });
 
+    peer.on('connect', () => {
+      console.log('peer answer connect');
+    });
+
     peer.on('signal', (data) => {
       console.log('client answer', data);
       offerRef.current = data;
@@ -70,6 +90,10 @@ const ContextProvider = ({ children }) => {
   const callUser = (id) => {
     setReceiver(id);
     const peer = new Peer({ initiator: true, trickle: false, config, stream });
+
+    peer.on('connect', () => {
+      console.log('callUser connect');
+    });
 
     peer.on('signal', (data) => {
       console.log('client make call', data);
