@@ -4,16 +4,15 @@ import Peer from 'simple-peer';
 
 const SocketContext = createContext();
 
-const config =  {
-
+const config = {
   iceServers: [
-      {url:'stun:stun.l.google.com:19302'},
-      {url:'stun:stun1.l.google.com:19302'},
-      {url:'stun:stun2.l.google.com:19302'},
-      {url:'stun:stun3.l.google.com:19302'},
-      {url:'stun:stun4.l.google.com:19302'}
-  ]
-}
+    { url: 'stun:stun.l.google.com:19302' },
+    { url: 'stun:stun1.l.google.com:19302' },
+    { url: 'stun:stun2.l.google.com:19302' },
+    { url: 'stun:stun3.l.google.com:19302' },
+    { url: 'stun:stun4.l.google.com:19302' },
+  ],
+};
 
 const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
@@ -54,7 +53,7 @@ const ContextProvider = ({ children }) => {
   const answerCall = () => {
     setCallAccepted(true);
 
-    const peer = new Peer({ initiator: false, trickle: false, config: config, stream });
+    const peer = new Peer({ initiator: false, trickle: false, config, stream });
 
     peer.on('signal', (data) => {
       console.log('client answer', data);
@@ -74,7 +73,7 @@ const ContextProvider = ({ children }) => {
 
   const callUser = (id) => {
     setReceiver(id);
-    const peer = new Peer({ initiator: true, trickle: false, config: config, stream });
+    const peer = new Peer({ initiator: true, trickle: false, config, stream });
 
     peer.on('signal', (data) => {
       console.log('client make call', data);
