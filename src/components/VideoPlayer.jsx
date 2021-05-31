@@ -40,7 +40,7 @@ const VideoPlayer = () => {
       {callAccepted && !callEnded && (
         <Paper className={classes.paper}>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>{call.from || receiver || 'Name'}</Typography>
+            <Typography variant="h5" gutterBottom>{call.from?._id || receiver || 'Name'}</Typography>
             <video playsInline ref={userVideo} autoPlay className={classes.video} />
           </Grid>
         </Paper>

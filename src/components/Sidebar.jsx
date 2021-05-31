@@ -50,8 +50,8 @@ const Sidebar = ({ children }) => {
   };
 
   const user2 = {
-    username: 'satthu.kun@gmail.com',
-    password: 'ngocmanh',
+    username: 'ngoc1234@gmail.com',
+    password: 'a123456',
   };
 
   const login = async (data) => {
