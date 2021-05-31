@@ -99,7 +99,7 @@ const ContextProvider = ({ children }) => {
 
   const answerCall = () => {
     const peer = new RTCPeerConnection({
-      iceServers: [{ url: 'stun:stun.l.google.com:19302' }],
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
     connectionRef.current = peer;
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
@@ -129,7 +129,7 @@ const ContextProvider = ({ children }) => {
 
   const callUser = (id) => {
     const peer = new RTCPeerConnection({
-      iceServers: [{ url: 'stun:stun.l.google.com:19302' }],
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
     connectionRef.current = peer;
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
