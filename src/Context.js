@@ -120,7 +120,7 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      peer.addIceCandidate(candidate);
+      peer.addIceCandidate(new RTCIceCandidate(candidate));
       const myCandidate = candidateRef.current;
       console.log('client_candidate', myCandidate);
       socket.current.emit('client_candidate', { candidate: myCandidate });
@@ -189,7 +189,7 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      connectionRef.current.addIceCandidate(candidate);
+      connectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
     });
   };
 
