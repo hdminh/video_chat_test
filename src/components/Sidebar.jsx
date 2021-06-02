@@ -75,7 +75,6 @@ const Sidebar = ({ children }) => {
           <Grid container className={classes.gridContainer}>
             <Grid item xs={12} md={6} className={classes.padding}>
               <Typography gutterBottom variant="h6">Account Info</Typography>
-              <Typography gutterBottom variant="h6">{token}</Typography>
               <Button variant="contained" color="primary" onClick={() => login(user1)} fullWidth>
                 User Test 1
               </Button>
