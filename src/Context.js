@@ -104,7 +104,6 @@ const ContextProvider = ({ children }) => {
   const handleOnTrack = (trackEvent) => {
     console.log('track', trackEvent);
     const remoteMediaStream = trackEvent.streams[0];
-    // const remoteMediaStream = new MediaStream([trackEvent.track]);
     userVideo.current.srcObject = remoteMediaStream;
     console.log('remote_video', userVideo.current.srcObject);
   };
@@ -123,9 +122,6 @@ const ContextProvider = ({ children }) => {
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
       peer.addIceCandidate(new RTCIceCandidate(candidate));
-      const myCandidate = candidateRef.current;
-      console.log('client_candidate', myCandidate);
-      socket.current.emit('client_candidate', { candidate: myCandidate });
     });
   };
 
@@ -168,11 +164,6 @@ const ContextProvider = ({ children }) => {
       setCallAccepted(true);
       peer
         .setRemoteDescription(new RTCSessionDescription(data.answer))
-        .then(() => {
-          const candidate = candidateRef.current;
-          console.log('client_candidate', candidate);
-          socket.current.emit('client_candidate', { candidate });
-        })
         .catch((err) => {
           console.log('Error in server_send_answer');
           console.error(err);

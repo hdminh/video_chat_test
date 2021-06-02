@@ -40,7 +40,6 @@ const useStyles = makeStyles((theme) => ({
 const Sidebar = ({ children }) => {
   const { me, callAccepted, callEnded, leaveCall, callUser, connectSocket } = useContext(SocketContext);
   const [idToCall, setIdToCall] = useState('');
-  const [token, setToken] = useState('');
 
   const classes = useStyles();
 
@@ -60,7 +59,6 @@ const Sidebar = ({ children }) => {
         if (res.status < 400) {
           console.log(res.data.data);
           connectSocket(res.data.data.token, res.data.data.userid);
-          setToken(res.data.data.token);
         }
       })
       .catch(() => {
