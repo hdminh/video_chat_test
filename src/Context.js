@@ -19,7 +19,6 @@ const ContextProvider = ({ children }) => {
   const userVideo = useRef();
   const offerRef = useRef();
   const socket = useRef();
-  const candidateRef = useRef();
 
   useEffect(() => {
     navigator.mediaDevices
@@ -96,14 +95,14 @@ const ContextProvider = ({ children }) => {
   const handleIceCandidateEvent = (e) => {
     console.log('candidate', e);
     if (e.candidate) {
-      candidateRef.current = e.candidate;
       socket.current.emit('client_candidate', { candidate: e.candidate });
     }
   };
 
   const handleOnTrack = (trackEvent) => {
     console.log('track', trackEvent);
-    const remoteMediaStream = trackEvent.streams[0];
+    // const remoteMediaStream = trackEvent.streams[0];
+    const remoteMediaStream = new MediaStream([trackEvent.track]);
     userVideo.current.srcObject = remoteMediaStream;
     console.log('remote_video', userVideo.current.srcObject);
   };
