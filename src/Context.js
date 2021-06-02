@@ -3,6 +3,10 @@ import { io } from 'socket.io-client';
 
 const SocketContext = createContext();
 
+const peer = new RTCPeerConnection({
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+});
+
 const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
@@ -13,7 +17,6 @@ const ContextProvider = ({ children }) => {
 
   const myVideo = useRef();
   const userVideo = useRef();
-  const connectionRef = useRef();
   const offerRef = useRef();
   const socket = useRef();
   const candidateRef = useRef();
@@ -29,16 +32,16 @@ const ContextProvider = ({ children }) => {
   }, []);
 
   const sendAnswer = () => {
-    connectionRef.current
+    peer
       .setRemoteDescription(new RTCSessionDescription(call.signal))
-      .then(() => connectionRef.current.createAnswer())
-      .then((answer) => connectionRef.current.setLocalDescription(answer))
+      .then(() => peer.createAnswer())
+      .then((answer) => peer.setLocalDescription(answer))
       .then(() => {
-        console.log('client_answer');
+        console.log('client_answer', peer.localDescription);
         socket.current.emit('client_answer', {
           callerId: call.from._id,
           isaccpeted: true,
-          answer: connectionRef.current.localDescription,
+          answer: peer.localDescription,
         });
       })
       .catch((err) => {
@@ -61,61 +64,60 @@ const ContextProvider = ({ children }) => {
     });
   };
 
-  const gotRemoteTrack = (event) => {
-    const remoteVideo = userVideo.current;
-    if (remoteVideo.srcObject !== event.streams[0]) {
-      const [streamObj] = event.streams;
-      remoteVideo.srcObject = streamObj;
-      console.log('gotRemoteTrack', streamObj);
-    }
-  };
+  // const gotRemoteTrack = (event) => {
+  //   const remoteVideo = userVideo.current;
+  //   if (remoteVideo.srcObject !== event.streams[0]) {
+  //     const streamObj = event.streams[0];
+  //     remoteVideo.srcObject = streamObj;
+  //     console.log('gotRemoteTrack', streamObj);
+  //   }
+  // };
 
   const handleICEConnectionStateChangeEvent = () => {
-    switch (connectionRef.current.iceConnectionState) {
+    switch (peer.iceConnectionState) {
       case 'closed':
       case 'failed':
       case 'disconnected':
-        connectionRef.current.close();
+        peer.close();
         break;
       default:
     }
   };
 
   const handleSignalingStateChangeEvent = () => {
-    switch (connectionRef.current.signalingState) {
+    switch (peer.signalingState) {
       case 'closed':
-        connectionRef.current.close();
+        peer.close();
         break;
       default:
+    }
+  };
+
+  const handleIceCandidateEvent = (e) => {
+    console.log('candidate', e);
+    if (e.candidate) {
+      candidateRef.current = e.candidate;
+      socket.current.emit('client_candidate', { candidate: e.candidate });
     }
   };
 
   const handleOnTrack = (trackEvent) => {
     console.log('track', trackEvent);
     const remoteMediaStream = trackEvent.streams[0];
+    // const remoteMediaStream = new MediaStream([trackEvent.track]);
     userVideo.current.srcObject = remoteMediaStream;
     console.log('remote_video', userVideo.current.srcObject);
   };
 
   const answerCall = () => {
-    const peer = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
-    connectionRef.current = peer;
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
     setCallAccepted(true);
     sendAnswer();
-    peer.onicecandidate = (rtcPeerConnectionIceEvent) => {
-      console.log('candidate', rtcPeerConnectionIceEvent);
-      if (rtcPeerConnectionIceEvent.candidate) {
-        candidateRef.current = rtcPeerConnectionIceEvent.candidate;
-      }
-    };
-
+    peer.onicecandidate = handleIceCandidateEvent;
     peer.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
     peer.onsignalingstatechange = handleSignalingStateChangeEvent;
-    // connectionRef.current.onnegotiationneeded = handleNegotiationNeededEvent;
-    peer.onaddtrack = gotRemoteTrack;
+    // peer.onnegotiationneeded = handleNegotiationNeededEvent;
+    // peer.onaddtrack = gotRemoteTrack;
     peer.ontrack = handleOnTrack;
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
@@ -128,26 +130,16 @@ const ContextProvider = ({ children }) => {
   };
 
   const callUser = (id) => {
-    const peer = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
-    connectionRef.current = peer;
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
     setReceiver(id);
     console.log('client_make_call');
     socket.current.emit('client_make_call', { receiverId: id });
 
-    peer.onicecandidate = (rtcPeerConnectionIceEvent) => {
-      console.log('candidate', rtcPeerConnectionIceEvent);
-      if (rtcPeerConnectionIceEvent.candidate) {
-        candidateRef.current = rtcPeerConnectionIceEvent.candidate;
-      }
-    };
-
+    peer.onicecandidate = handleIceCandidateEvent;
     peer.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
     peer.onsignalingstatechange = handleSignalingStateChangeEvent;
     // this.peerConnection.onnegotiationneeded = this.handleNegotiationNeededEvent;
-    peer.onaddtrack = gotRemoteTrack;
+    // peer.onaddtrack = gotRemoteTrack;
     peer.ontrack = handleOnTrack;
 
     socket.current.on('server_send_receiver_online', () => {
@@ -189,13 +181,13 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      connectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      peer.addIceCandidate(new RTCIceCandidate(candidate));
     });
   };
 
   const leaveCall = () => {
     setCallEnded(true);
-    connectionRef.current.destroy();
+    peer.destroy();
     window.location.reload();
   };
 
