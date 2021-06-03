@@ -136,8 +136,8 @@ const ContextProvider = ({ children }) => {
 
   const handleOnTrack = (trackEvent) => {
     console.log('track', trackEvent);
-    // const remoteMediaStream = trackEvent.streams[0];
-    const remoteMediaStream = new MediaStream([trackEvent.track]);
+    const remoteMediaStream = trackEvent.streams[0];
+    // const remoteMediaStream = new MediaStream([trackEvent.track]);
     userVideo.current.srcObject = remoteMediaStream;
     console.log('remote_video', userVideo.current.srcObject);
   };
