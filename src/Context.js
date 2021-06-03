@@ -8,41 +8,41 @@ const peer = new RTCPeerConnection({
     {
       urls: 'stun:stun.l.google.com:19302',
     },
-    {
-      urls: 'turn:relay.backups.cz',
-      credential: 'webrtc',
-      username: 'webrtc',
-    },
-    {
-      urls: 'turn:relay.backups.cz?transport=tcp',
-      credential: 'webrtc',
-      username: 'webrtc',
-    },
-    {
-      urls: 'turn:numb.viagenie.ca',
-      credential: 'muazkh',
-      username: 'webrtc@live.com',
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=udp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808',
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=tcp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808',
-    },
-    {
-      urls: 'turn:turn.bistri.com:80',
-      credential: 'homeo',
-      username: 'homeo',
-    },
-    {
-      url: 'turn:turn.anyfirewall.com:443?transport=tcp',
-      credential: 'webrtc',
-      username: 'webrtc',
-    },
+    // {
+    //   urls: 'turn:relay.backups.cz',
+    //   credential: 'webrtc',
+    //   username: 'webrtc',
+    // },
+    // {
+    //   urls: 'turn:relay.backups.cz?transport=tcp',
+    //   credential: 'webrtc',
+    //   username: 'webrtc',
+    // },
+    // {
+    //   urls: 'turn:numb.viagenie.ca',
+    //   credential: 'muazkh',
+    //   username: 'webrtc@live.com',
+    // },
+    // {
+    //   urls: 'turn:192.158.29.39:3478?transport=udp',
+    //   credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+    //   username: '28224511:1379330808',
+    // },
+    // {
+    //   urls: 'turn:192.158.29.39:3478?transport=tcp',
+    //   credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+    //   username: '28224511:1379330808',
+    // },
+    // {
+    //   urls: 'turn:turn.bistri.com:80',
+    //   credential: 'homeo',
+    //   username: 'homeo',
+    // },
+    // {
+    //   url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+    //   credential: 'webrtc',
+    //   username: 'webrtc',
+    // },
   ],
 });
 
@@ -53,11 +53,13 @@ const ContextProvider = ({ children }) => {
   const [receiver, setReceiver] = useState('');
   const [call, setCall] = useState({});
   const [me, setMe] = useState('');
+  const [flag, setFlag] = useState(true);
 
   const myVideo = useRef();
   const userVideo = useRef();
   const offerRef = useRef();
   const socket = useRef();
+  const candidateRef = useRef();
 
   useEffect(() => {
     navigator.mediaDevices
@@ -134,14 +136,18 @@ const ContextProvider = ({ children }) => {
   const handleIceCandidateEvent = (e) => {
     console.log('candidate', e);
     if (e.candidate) {
-      socket.current.emit('client_candidate', { candidate: e.candidate });
+      if (candidateRef.current) {
+        candidateRef.current.push(e.candidate);
+      } else {
+        candidateRef.current = Array.of(e.candidate);
+      }
+      // socket.current.emit('client_candidate', { candidate: e.candidate });
     }
   };
 
   const handleOnTrack = (trackEvent) => {
     console.log('track', trackEvent);
     const remoteMediaStream = trackEvent.streams[0];
-    // const remoteMediaStream = new MediaStream([trackEvent.track]);
     userVideo.current.srcObject = remoteMediaStream;
     console.log('remote_video', userVideo.current.srcObject);
   };
@@ -159,7 +165,15 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      peer.addIceCandidate(new RTCIceCandidate(candidate));
+      peer.addIceCandidate(new RTCIceCandidate(candidate))
+        .then(() => {
+          if (flag) {
+            candidateRef.current.forEach((candidateA) => {
+              socket.current.emit('client_candidate', { candidate: candidateA });
+            });
+          }
+          setFlag(false);
+        });
     });
   };
 
@@ -202,6 +216,11 @@ const ContextProvider = ({ children }) => {
       setCallAccepted(true);
       peer
         .setRemoteDescription(new RTCSessionDescription(data.answer))
+        .then(() => {
+          candidateRef.current.forEach((candidate) => {
+            socket.current.emit('client_candidate', { candidate });
+          });
+        })
         .catch((err) => {
           console.log('Error in server_send_answer');
           console.error(err);
