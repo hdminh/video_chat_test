@@ -53,7 +53,6 @@ const ContextProvider = ({ children }) => {
   const [receiver, setReceiver] = useState('');
   const [call, setCall] = useState({});
   const [me, setMe] = useState('');
-  const [flag, setFlag] = useState(true);
 
   const myVideo = useRef();
   const userVideo = useRef();
@@ -82,6 +81,11 @@ const ContextProvider = ({ children }) => {
           callerId: call.from._id,
           isaccpeted: true,
           answer: peer.localDescription,
+        });
+      })
+      .then(() => {
+        candidateRef.current.forEach((candidateA) => {
+          socket.current.emit('client_candidate', { candidate: candidateA });
         });
       })
       .catch((err) => {
@@ -165,15 +169,7 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      peer.addIceCandidate(new RTCIceCandidate(candidate))
-        .then(() => {
-          if (flag) {
-            candidateRef.current.forEach((candidateA) => {
-              socket.current.emit('client_candidate', { candidate: candidateA });
-            });
-          }
-          setFlag(false);
-        });
+      peer.addIceCandidate(new RTCIceCandidate(candidate));
     });
   };
 
