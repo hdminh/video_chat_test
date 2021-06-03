@@ -9,6 +9,12 @@ const peer = new RTCPeerConnection({
       urls: 'stun:stun.l.google.com:19302',
     },
     {
+      urls: 'turn:turn01.hubl.in?transport=tcp',
+    },
+    {
+      urls: 'turn:turn02.hubl.in?transport=udp',
+    },
+    {
       urls: 'turn:numb.viagenie.ca',
       credential: 'muazkh',
       username: 'webrtc@live.com',
