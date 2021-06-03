@@ -53,6 +53,7 @@ const ContextProvider = ({ children }) => {
   const [receiver, setReceiver] = useState('');
   const [call, setCall] = useState({});
   const [me, setMe] = useState('');
+  const [flag, setFlag] = useState(true);
 
   const myVideo = useRef();
   const userVideo = useRef();
@@ -84,9 +85,7 @@ const ContextProvider = ({ children }) => {
         });
       })
       .then(() => {
-        candidateRef.current.forEach((candidateA) => {
-          socket.current.emit('client_candidate', { candidate: candidateA });
-        });
+
       })
       .catch((err) => {
         console.log('Error in client_answer');
@@ -107,15 +106,6 @@ const ContextProvider = ({ children }) => {
       setCall({ isReceivingCall: true, from: caller, signal: offer });
     });
   };
-
-  // const gotRemoteTrack = (event) => {
-  //   const remoteVideo = userVideo.current;
-  //   if (remoteVideo.srcObject !== event.streams[0]) {
-  //     const streamObj = event.streams[0];
-  //     remoteVideo.srcObject = streamObj;
-  //     console.log('gotRemoteTrack', streamObj);
-  //   }
-  // };
 
   const handleICEConnectionStateChangeEvent = () => {
     switch (peer.iceConnectionState) {
@@ -169,7 +159,15 @@ const ContextProvider = ({ children }) => {
 
     socket.current.on('server_send_candidate', ({ candidate }) => {
       console.log('server_send_candidate', candidate);
-      peer.addIceCandidate(new RTCIceCandidate(candidate));
+      peer.addIceCandidate(new RTCIceCandidate(candidate))
+        .then(() => {
+          if (flag) {
+            candidateRef.current.forEach((candidateA) => {
+              socket.current.emit('client_candidate', { candidate: candidateA });
+            });
+          }
+          setFlag(false);
+        });
     });
   };
 
