@@ -1,0 +1,17 @@
+.profile-container{
+    margin: 5% 0;
+}
+.flex-container {
+    display: flex;
+}
+.profile li{
+    border-top: none;
+}
+.profile li a{
+    text-decoration: none;
+    color: black;
+}
+.profile-image{
+    width: 100%;
+    height: 300px;
+}

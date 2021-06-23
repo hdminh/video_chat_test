@@ -1,0 +1,23 @@
+{
+    "firebaseConfig": {
+        "apiKey": "AIzaSyCKnVf-0iTWFpynTkh_rgArcvMdO0Qyf68",
+        "authDomain": "final-project-togethers-app.firebaseapp.com",
+        "databaseURL": "https://final-project-togethers-app.firebaseio.com",
+        "projectId": "final-project-togethers-app",
+        "storageBucket": "final-project-togethers-app.appspot.com",
+        "messagingSenderId": "820850153235",
+        "appId": "1:820850153235:web:ece10e7e97de73d046ece6",
+        "measurementId": "G-R14TF84D1H"
+    },
+    "firebaseConfigFE": {
+        "apiKey": "AIzaSyDxrWaNVDFaWx1Lt0Yxmdl7ykmWVhkYd4o",
+        "authDomain": "final-project-4de6d.firebaseapp.com",
+        "databaseURL": "https://final-project-4de6d.firebaseio.com",
+        "projectId": "final-project-4de6d",
+        "storageBucket": "final-project-4de6d.appspot.com",
+        "messagingSenderId": "426195390481",
+        "appId": "1:426195390481:web:8d0e2f69ebf9dae2cca1b0",
+        "measurementId": "G-GR1DP93NF0"
+    }
+    
+}

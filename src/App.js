@@ -1,51 +1,97 @@
-import React from 'react';
-import { Typography, AppBar } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import React, { useEffect, useState } from "react";
+import dotenv from "dotenv";
+import "./App.css";
+import "./assets/css/main.css";
+import "./components/FontAwesomeIcons/index";
+import "./components/_init";
+import Login from "./views/Sign/Login/login";
+import Home from "./views/Home/home";
+import Logout from "./views/Sign/Logout/logout";
+import Register from "./views/Sign/Register/register";
+import Profile from "./views/User/Profile/profile";
+import ChangePassword from "./views/User/ChangePassword/index";
 
-import VideoPlayer from './components/VideoPlayer';
-import Sidebar from './components/Sidebar';
-import Notifications from './components/Notifications';
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-const useStyles = makeStyles((theme) => ({
-  appBar: {
-    borderRadius: 15,
-    margin: '30px 100px',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '600px',
-    border: '2px solid black',
+// layouts
+import UserLayout from "./layouts/User/user-layout";
+import SignLayout from "./layouts/Sign/sign-layout";
 
-    [theme.breakpoints.down('xs')]: {
-      width: '90%',
-    },
-  },
-  image: {
-    marginLeft: '15px',
-  },
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
-  },
-}));
+// pages
+import Encounter from "./views/Encounters/index";
+import Message from "./views/Messages/index";
+import Friend from "./views/Friends/index";
+import Restaurant from "./views/Restaurants/index";
+import Group from "./views/Groups/index";
+import { PrivateRoute } from './utils/RouteUtils';
 
-const App = () => {
-  const classes = useStyles();
+import LocationContext from './context/LocationContext'
+import MatchContext from './context/MatchContext'
+import VideoCall from "./components/VideoCall/VideoCall";
+
+dotenv.config();
+
+// define route
+const AppRoute = ({ component: Component, layout: Layout, ...rest }) => (
+  <Route
+    {...rest}
+    render={(props) => (
+      <Layout>
+        <Component {...props}></Component>
+      </Layout>
+    )}
+  ></Route>
+);
+
+function App() {
+  const [response, setResponse] =  useState("");
+  console.log("App render")
+
 
   return (
-    <div className={classes.wrapper}>
-      <AppBar className={classes.appBar} position="static" color="inherit">
-        <Typography variant="h2" align="center">Video Chat</Typography>
-      </AppBar>
-      <VideoPlayer />
-      <Sidebar>
-        <Notifications />
-      </Sidebar>
-    </div>
+    <Router>
+      <Switch>
+        <PrivateRoute path="/" exact layout={UserLayout} component={Home} />
+        <PrivateRoute
+          path="/encounters"
+          layout={UserLayout}
+          component={Encounter}
+        />
+        <PrivateRoute
+          path="/messages/"
+          layout={UserLayout}
+          component={Message}
+        />
+        <PrivateRoute
+          path="/video-call"
+          layout={UserLayout}
+          component={VideoCall}
+        />
+        <PrivateRoute path="/friends" layout={UserLayout} component={Friend} />
+        <PrivateRoute path="/groups" exact layout={UserLayout} component={Group} />
+        <PrivateRoute
+          path="/restaurants"
+          layout={UserLayout}
+          component={Restaurant}
+        />
+
+        <PrivateRoute
+          path="/user/change-password"
+          layout={UserLayout}
+          component={ChangePassword}
+        />
+        <PrivateRoute
+          path="/user/profile"
+          layout={UserLayout}
+          component={Profile}
+        />
+        <AppRoute path="/login" layout={SignLayout} component={Login} />
+        <PrivateRoute path="/logout" layout={SignLayout} component={Logout} />
+        <AppRoute path="/register" layout={SignLayout} component={Register} />
+      </Switch>
+    </Router>
+
   );
-};
+}
 
 export default App;
