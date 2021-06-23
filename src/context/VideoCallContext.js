@@ -117,6 +117,7 @@ const VideoCallProvider = ({ children }) => {
       if (candidateRef.current) {
         candidateRef.current.push(e.candidate);
       } else {
+        console.log("candidate array", Array.of(e.candidate));
         candidateRef.current = Array.of(e.candidate);
       }
     }
@@ -133,7 +134,7 @@ const VideoCallProvider = ({ children }) => {
         console.log("client_answer");
         socket.current.emit("client_answer", {
           callerId: call.from._id,
-          isaccpeted: true,
+          isaccepted: true,
           answer: peer.localDescription,
         });
       })
@@ -208,7 +209,7 @@ const VideoCallProvider = ({ children }) => {
   const rejectCall = () => {
     socket.current.emit("client_answer", {
       callerId: call.from._id,
-      isaccpeted: false,
+      isaccepted: false,
       answer: "",
     });
   };
@@ -239,28 +240,17 @@ const VideoCallProvider = ({ children }) => {
     // peer.onaddstream = gotRemoteStream;
     peer.ontrack = handleOnTrack;
 
-    peer.addEventListener(
-      "icecandidate",
-      (ev) => {
-        if (ev.candidate) {
-          candidateRef.current = ev.candidate;
-        }
-      },
-      false
-    );
-
     socket.current.on("server_send_candidate", (data) => {
       console.log("server_send_candidate", data);
-      peer.addIceCandidate(new RTCIceCandidate(data.candidate)).then(() => {
-        if (flag) {
-          candidateRef.current.forEach((candidateA) => {
-            socket.current.emit("client_candidate", {
-              candidate: candidateA,
-            });
-          });
-        }
+      peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+      if (flag) {
         setFlag(false);
-      });
+        candidateRef.current.forEach((candidateA) => {
+          socket.current.emit("client_candidate", {
+            candidate: candidateA,
+          });
+        });
+      }
     });
   };
 
@@ -309,8 +299,8 @@ const VideoCallProvider = ({ children }) => {
 
     socket.current.on("server_send_answer", (data) => {
       console.log("server_send_answer", data);
-      if (data.isaccpeted) {
-        setCallAccepted(data.isaccpeted);
+      if (data.isaccepted) {
+        setCallAccepted(data.isaccepted);
         peer
           .setRemoteDescription(new RTCSessionDescription(data.answer))
           .then(() => {
@@ -323,7 +313,7 @@ const VideoCallProvider = ({ children }) => {
             console.error(err);
           });
       } else {
-        // leaveCall();
+        leaveCall();
       }
     });
 
@@ -336,7 +326,8 @@ const VideoCallProvider = ({ children }) => {
   const leaveCall = () => {
     setCallEnded(true);
     setCallAccepted(false);
-    peer.destroy();
+    peer.close();
+    window.history.back();
   };
 
   return (
