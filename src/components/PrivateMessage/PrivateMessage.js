@@ -35,7 +35,7 @@ const PrivateMessage = (props) => {
       );
       const userid = localStorage.getItem("userid");
       const userInform = matchItem.participants.find(
-        (element) => element._id === userid
+        (element) => element._id !== userid
       );
       loadingContext.setIsLoading(true);
       setUserChatInform(userInform);
